@@ -1,0 +1,253 @@
+# Réutilisation des configurations de flux de travail
+
+Recherchez des informations sur l’évitement de la duplication lors de la création d’un flux de travail en réutilisant des flux de travail YAML.
+
+## Workflows réutilisables
+
+Informations de référence sur les flux de travail réutilisables.
+
+### Accès aux workflows réutilisables
+
+Un workflow réutilisable peut être utilisé par un autre workflow si l’une ou l’autre des conditions suivantes est vraie :
+
+* Les deux workflows se trouvent dans le même dépôt.
+* Le flux de travail appelé est stocké dans un référentiel, et votre  d’entreprisevous permet d’utiliser des flux de travail réutilisables publics.
+* Le workflow appelé est stocké dans un dépôt privé, et les paramètres définis pour ce dépôt le rendent accessible. Pour plus d’informations, consultez [Partage d’actions et de workflows au sein de votre organisation](/fr/actions/creating-actions/sharing-actions-and-workflows-with-your-organization) et [Partage d’actions et de workflows à partir de votre référentiel privé](/fr/actions/creating-actions/sharing-actions-and-workflows-from-your-private-repository).
+
+Le tableau suivant présente l’accessibilité des workflows réutilisables à un workflow appelant, en fonction de la visibilité du référentiel hôte.
+
+| Référentiel appelant | Référentiels de workflows accessibles |
+| -------------------- | ------------------------------------- |
+| `private`            |                                       |
+| `private`            |                                       |
+| `public`             |                                       |
+|                      |                                       |
+| `public`             | `public`                              |
+
+Les **autorisations d’actions** sur la page des paramètres Actions du référentiel appelant doivent être configurées pour autoriser l’utilisation d’actions et de flux de travail réutilisables. Consultez [Gestion des paramètres de GitHub Actions pour un référentiel](/fr/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#allowing-select-actions-and-reusable-workflows-to-run).
+
+Pour privés, la stratégie **d’accès** sur la page Des paramètres Actions du dépôt du flux de travail appelé doit être configurée explicitement pour autoriser l’accès à partir de référentiels contenant des flux de travail appelants . Voir [Gestion des paramètres de GitHub Actions pour un référentiel](/fr/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#allowing-access-to-components-in-a-private-repository).
+
+> \[!NOTE]
+> Pour améliorer la sécurité, GitHub Actions ne prend pas en charge les redirections pour les actions ou les workflows réutilisables. Cela signifie que quand le propriétaire, le nom du dépôt d’une action ou le nom d’une action est modifié, tous les workflows utilisant cette action avec le nom précédent vont échouer.
+
+### Limitations des flux de travail réutilisables
+
+* Vous pouvez connecter jusqu’à dix niveaux de flux de travail. Pour plus d’informations, consultez [Imbrication de workflows réutilisables](/fr/actions/how-tos/sharing-automations/reuse-workflows#nesting-reusable-workflows).
+
+* Vous pouvez appeler un maximum de 50 20 flux de travail réutilisables uniques à partir d’un seul fichier de flux de travail. Cette limite inclut toutes les arborescences de workflows réutilisables imbriqués qui peuvent être appelés à partir de votre fichier de workflows de l’appelant de niveau supérieur.
+
+  Par exemple, *workflow\_appelant\_niveau\_supérieur.yml* → *workflow\_appelé-1.yml* → *workflow\_appelé-2.yml* compte comme deux workflows réutilisables.
+
+* Toutes les variables d’environnement configurées dans un contexte `env` défini au niveau du workflow dans le workflow appelant ne sont pas propagées au workflow appelé. Pour plus d’informations, consultez « [Stocker des informations dans des variables](/fr/actions/learn-github-actions/variables) » et « [Référence des contextes](/fr/actions/learn-github-actions/contexts#env-context) ».
+
+* De même, les variables d’environnement configurées dans le contexte `env`, défini dans le workflow appelé, ne sont pas accessibles dans le contexte `env` du workflow de l’appelant. Au lieu de cela, vous devez utiliser les sorties du workflow réutilisable. Pour plus d’informations, consultez [Utilisation des résultats d’un workflow réutilisable](/fr/actions/how-tos/sharing-automations/reuse-workflows#using-outputs-from-a-reusable-workflow).
+
+* Pour réutiliser des variables dans plusieurs workflows, définissez-les au niveau de l’organisation, du dépôt ou de l’environnement, et référencez-les à l’aide du contexte `vars`. Pour plus d’informations, consultez [Stocker des informations dans des variables](/fr/actions/learn-github-actions/variables) et [Référence des contextes](/fr/actions/learn-github-actions/contexts#vars-context).
+
+* Les workflows réutilisables sont appelés directement au sein d’un travail, et non à partir d’une étape de travail. Vous ne pouvez donc pas utiliser `GITHUB_ENV` pour passer des valeurs aux étapes de travail dans le workflow de l’appelant.
+
+### Mots clés pris en charge pour les travaux qui appellent un workflow réutilisable
+
+Lorsque vous appelez un workflow réutilisable, vous ne pouvez utiliser que les mots clés suivants dans le travail contenant l’appel :
+
+* [`jobs.<job_id>.name`](/fr/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idname)
+* [`jobs.<job_id>.uses`](/fr/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_iduses)
+* [`jobs.<job_id>.with`](/fr/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idwith)
+* [`jobs.<job_id>.with.<input_id>`](/fr/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idwithinput_id)
+* [`jobs.<job_id>.secrets`](/fr/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idsecrets)
+* [`jobs.<job_id>.secrets.<secret_id>`](/fr/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idsecretssecret_id)
+* [`jobs.<job_id>.secrets.inherit`](/fr/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idsecretsinherit)
+* [`jobs.<job_id>.strategy`](/fr/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstrategy)
+* [`jobs.<job_id>.needs`](/fr/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idneeds)
+* [`jobs.<job_id>.if`](/fr/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idif)
+* [`jobs.<job_id>.concurrency`](/fr/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idconcurrency)
+* [`jobs.<job_id>.permissions`](/fr/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idpermissions)
+
+  > \[!NOTE]
+  >
+  > * Si `jobs.<job_id>.permissions` n’est pas spécifié dans le travail appelant, le workflow appelé a les autorisations par défaut de `GITHUB_TOKEN`. Pour plus d’informations, consultez « [Syntaxe de flux de travail pour GitHub Actions](/fr/actions/reference/workflow-syntax-for-github-actions#permissions) ».
+  > * Les autorisations `GITHUB_TOKEN` passées à partir du workflow appelant ne peuvent être rétrogradées (non élevées) que par le workflow appelé.
+  > * Si vous utilisez `jobs.<job_id>.concurrency.cancel-in-progress: true`, n’utilisez pas la même valeur pour `jobs.<job_id>.concurrency.group` dans les workflows appelés et appelants, car cela entraînerait l’annulation du workflow déjà en cours d’exécution. Un workflow appelé reprend le nom de son workflow appelant dans ${{ github.workflow }} ; ainsi, l’utilisation de ce contexte comme valeur de `jobs.<job_id>.concurrency.group` à la fois dans le workflow appelant et dans le workflow appelé provoquera l’annulation du workflow appelant lors de l’exécution du workflow appelé.
+
+### Comment les workflows réutilisables utilisent les runners
+
+#### Runners GitHub-hosted
+
+L’affectation des runners GitHub-hosted est systématiquement évaluée en se basant uniquement sur le contexte de l’appelant. La facturation des runners GitHub-hosted est toujours rattachée à l’appelant. Le workflow appelant ne peut pas exploiter les runners GitHub-hosted du référentiel appelé. Pour plus d’informations, consultez « [Exécuteurs hébergés par GitHub](/fr/actions/using-github-hosted-runners/about-github-hosted-runners) ».
+
+#### Exécuteurs auto-hébergés
+
+Les workflows appelés appartenant au même utilisateur, à la même organisation que le workflow appelant peuvent utiliser les runners auto-hébergés depuis le contexte de l’appelant. Cela signifie qu’un workflow appelé peut accéder aux exécuteurs auto-hébergés qui se trouvent :
+
+* Dans le dépôt appelant
+* Au sein de l’organisation ou de l’entreprise, à condition que le runner ait été rendu disponible pour ce référentiel
+
+### Accès et autorisations pour les workflows imbriqués
+
+Un workflow qui contient des workflows réutilisables imbriqués échouera si l’un des workflows imbriqués n’est pas accessible au workflow de l’appelant initial. Pour plus d’informations, consultez [Accès aux workflows réutilisables](#access-to-reusable-workflows).
+
+Dans les workflows imbriqués, les autorisations `GITHUB_TOKEN` ne peuvent être identiques ni plus restrictives. Par exemple, dans la chaîne de workflows A > B > C, si le workflow A dispose d’une autorisation de jeton `package: read`, B et C ne peuvent pas avoir d’autorisation `package: write`. Pour plus d’informations, consultez « [Utiliser GITHUB\_TOKEN pour l’authentification dans les flux de travail](/fr/actions/security-guides/automatic-token-authentication) ».
+
+Pour plus d’informations sur la manière d’utiliser l’API afin de déterminer quels fichiers de workflow ont été impliqués dans une exécution de workflow particulière, consultez [Réutiliser des workflows](/fr/actions/how-tos/sharing-automations/reuse-workflows#monitoring-which-workflows-are-being-used).
+
+### Comportement des workflows réutilisables lors de la réexécution de tâches
+
+Les workflows réutilisables provenant de référentiels publics peuvent être référencés à l’aide d’un SHA, d’une étiquette de mise en production ou d’un nom de branche. Pour plus d’informations, consultez « [Réutiliser des workflows](/fr/actions/using-workflows/reusing-workflows#calling-a-reusable-workflow) ».
+
+Lorsque vous réexécutez un workflow qui utilise un workflow réutilisable et que la référence n’est pas un SHA, il existe des comportements à prendre en compte :
+
+* La réexécution de tous les travaux dans un workflow utilise le workflow réutilisable à partir de la référence spécifiée. Pour plus d’informations sur la réexécution de tous les travaux d’un workflow, consultez [Ré-exécution de workflows et de tâches](/fr/actions/managing-workflow-runs/re-running-workflows-and-jobs#re-running-all-the-jobs-in-a-workflow).
+* La réexécution des travaux ayant échoué ou d’un travail spécifique dans un workflow utilise le workflow réutilisable à partir du même SHA de validation que lors de la première tentative. Pour plus d’informations sur la réexécution des travaux en échec d’un workflow, consultez [Ré-exécution de workflows et de tâches](/fr/actions/managing-workflow-runs/re-running-workflows-and-jobs#re-running-failed-jobs-in-a-workflow). Pour plus d’informations sur la réexécution d’un travail spécifique d’un workflow, consultez [Ré-exécution de workflows et de tâches](/fr/actions/managing-workflow-runs/re-running-workflows-and-jobs#re-running-a-specific-job-in-a-workflow).
+
+### Contexte `github`
+
+Lorsqu’un workflow réutilisable est déclenché par un workflow appelant, le contexte `github` est toujours associé au workflow appelant. Le workflow appelé est automatiquement autorisé à accéder à `github.token` et à `secrets.GITHUB_TOKEN`. Pour plus d’informations sur le contexte `github`, consultez « [Référence des contextes](/fr/actions/learn-github-actions/contexts#github-context) ».
+
+## Modèles de flux de travail
+
+Informations de référence à utiliser lors de la création de modèles de flux de travail pour votre organisation.
+
+### Disponibilité des modèles de flux de travail
+
+Vous pouvez utiliser des modèles dans des référentiels qui correspondent ou ont une visibilité plus restreinte que le référentiel de modèles.
+
+* Les modèles de flux de travail dans un référentiel public `.github` sont disponibles pour tous les types de référentiels.
+* Les modèles de flux de travail dans un référentiel interne `.github` ne sont disponibles que pour les référentiels internes et privés.
+* Les modèles de flux de travail dans un référentiel privé `.github` ne sont disponibles que pour les référentiels privés.
+
+### Accorder l’accès aux référentiels privés/internes
+
+Si vous utilisez un référentiel `.github` privé ou interne, vous devez accorder un accès en lecture aux utilisateurs ou aux équipes qui doivent pouvoir utiliser les modèles.
+
+### Espace réservé `$default-branch`
+
+Si vous devez faire référence à la branche par défaut d’un référentiel, vous pouvez utiliser l’espace réservé `$default-branch` dans votre modèle de flux de travail. Lorsqu’un workflow est créé, l’espace réservé est automatiquement remplacé par le nom de la branche par défaut du dépôt.
+
+### Exemple de fichier de modèle de flux de travail
+
+Ce fichier nommé `octo-organization-ci.yml` illustre un flux de travail de base.
+
+```yaml copy
+name: Octo Organization CI
+on:
+  push:
+    branches: [ $default-branch ]
+  pull_request:
+    branches: [ $default-branch ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Run a one-line script
+        run: echo Hello from Octo Organization
+```
+
+### Exigences relatives aux fichiers de métadonnées
+
+Le fichier de métadonnées doit porter le même nom que le fichier de workflow, mais au lieu de l’extension `.yml`, l’extension `.properties.json` doit lui être ajoutée. Par exemple, ce fichier nommé `octo-organization-ci.properties.json` contient les métadonnées d’un fichier de workflow nommé `octo-organization-ci.yml` :
+
+```json copy
+{
+    "name": "Octo Organization Workflow",
+    "description": "Octo Organization CI workflow template.",
+    "iconName": "example-icon",
+    "categories": [
+        "Go"
+    ],
+    "filePatterns": [
+        "package.json$",
+        "^Dockerfile",
+        ".*\\.md$"
+    ]
+}
+```
+
+* `name`
+
+- **Requis.** Nom du workflow. Celui-ci s’affiche dans la liste des workflows disponibles.
+
+* `description`
+
+- **Requis.** Description du workflow. Celui-ci s’affiche dans la liste des workflows disponibles.
+
+* `iconName`
+
+- **Facultatif.** Spécifie une icône pour le workflow affiché dans la liste des workflows.
+  `iconName` peut être l’un des types suivants :
+  * Fichier SVG stocké dans le répertoire `workflow-templates`. Pour référencer un fichier, la valeur doit être le nom du fichier sans son extension. Par exemple, un fichier SVG nommé `example-icon.svg` est référencé comme `example-icon` .
+  * Icône de l’ensemble d’[octicons](https://primer.style/octicons/) de GitHub. Pour référencer un octicon, la valeur doit être `octicon <icon name>`. Par exemple : `octicon smiley`.
+
+* `categories`
+
+- **Facultatif.** Définit les catégories sous lesquelles le workflow est affiché. Vous pouvez utiliser des noms de catégorie à partir des listes suivantes :
+  * Noms de catégorie généraux du dépôt [starter-workflows](https://github.com/actions/starter-workflows/blob/main/README.md#categories).
+  * Langages Linguist figurant dans la liste du dépôt [linguist](https://github.com/github-linguist/linguist/blob/main/lib/linguist/languages.yml).
+  * Piles techniques prises en charge figurant dans la liste du dépôt [starter-workflows](https://github.com/github-starter-workflows/repo-analysis-partner/blob/main/tech_stacks.yml).
+
+* `filePatterns`
+
+- **Facultatif.** Permet d’utiliser le workflow si le dépôt de l’utilisateur a dans son répertoire racine un fichier qui correspond à une expression régulière définie.
+
+## Ancres et alias YAML
+
+Vous pouvez utiliser les ancres et les alias YAML pour réduire les répétitions dans vos flux de travail. Une ancre (marquée par `&`) identifie un élément de contenu que vous souhaitez réutiliser, tandis qu’un alias (marqué par `*`) répète ce contenu à un autre endroit.
+
+Pour plus d’informations sur les ancres et les alias, consultez [Ancres et alias de nœuds dans la spécification YAML](https://yaml.org/spec/1.2.2/#3222-anchors-and-aliases).
+
+Voici un exemple qui utilise des ancres et des alias YAML avec des variables d’environnement :
+
+```yaml
+jobs:
+  job1:
+    env: &env_vars # Define the anchor on first use
+      NODE_ENV: production
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - run: echo "Using production settings"
+
+  job2:
+    env: *env_vars # Reuse the environment variables
+    steps:
+      - run: echo "Same environment variables here"
+```
+
+Cela équivaut à écrire le YAML suivant sans ancres ni alias :
+
+```yaml
+jobs:
+  job1:
+    env:
+      NODE_ENV: production
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - run: echo "Using production settings"
+
+  job2:
+    env:
+      NODE_ENV: production
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - run: echo "Same environment variables here"
+```
+
+Vous pouvez également utiliser des ancres pour des configurations plus complexes, telles que la réutilisation d’une configuration de tâche entière :
+
+```yaml
+jobs:
+  test: &base_job # Define the anchor on first use
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NODE_VERSION: '18'
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm test
+
+  alt-test: *base_job # Reuse the entire job configuration
+```
