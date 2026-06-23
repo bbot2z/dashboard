@@ -1,0 +1,259 @@
+# Utilisation du registre de conteneurs
+
+Vous pouvez stocker et gérer des images Docker et OCI dans le Container registry.
+
+## À propos du Container registry
+
+Le Container registry stocke des images conteneur dans votre organisation ou compte personnel et vous permet d’associer une image à un dépôt. Vous pouvez choisir d’hériter des autorisations d’un dépôt ou de définir des autorisations granulaires indépendamment d’un dépôt. Vous pouvez également accéder aux images conteneur publiques de manière anonyme.
+
+## À propos de la prise en charge du Container registry
+
+Le Container registry prend actuellement en charge les formats d’image conteneur suivants :
+
+* [Manifeste d’image Docker V2, schéma 2](https://docs.docker.com/registry/spec/manifest-v2-2/)
+* [Spécifications d’Open Container Initiative (OCI)](https://github.com/opencontainers/image-spec)
+
+Lors de l’installation ou de la publication d’une image Docker, le Container registry prend en charge les couches étrangères, telles que les images Windows.
+
+## Authentification auprès du Container registry
+
+> \[!NOTE]
+> GitHub Packages prend uniquement en charge l’authentification à l’aide d’un personal access token (classic). Pour plus d’informations, consultez « [Gestion de vos jetons d’accès personnels](/fr/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) ».
+
+Vous avez besoin d’un jeton d’accès pour publier, installer et supprimer des packages privés, internes et publics.
+
+Vous pouvez utiliser un personal access token (classic) pour vous authentifier auprès de GitHub Packages ou de l’API GitHub. Quand vous créez un personal access token (classic), vous pouvez l’attribuer à différentes étendues selon vos besoins. Pour plus d’informations sur les étendues liées aux packages pour un personal access token (classic), consultez [À propos des autorisations pour les packages GitHub](/fr/packages/learn-github-packages/about-permissions-for-github-packages#about-scopes-and-permissions-for-package-registries).
+
+Pour vous authentifier sur un registre GitHub Packages dans un workflow GitHub Actions, vous pouvez utiliser :
+
+* `GITHUB_TOKEN` pour publier des packages associés au dépôt du workflow.
+* Un personal access token (classic) avec au moins `read:packages` la possibilité d'installer des paquets associés à d'autres référentiels privés (`GITHUB_TOKEN` peut être utilisé si le référentiel a un accès en lecture au paquet. Consultez [Configuration du contrôle d’accès et de la visibilité d’un package](/fr/packages/learn-github-packages/configuring-a-packages-access-control-and-visibility).
+
+### Authentification dans un workflow GitHub Actions
+
+Ce registre prend en charge les autorisations granulaires. Pour les registres prenant en charge les autorisations granulaires, si votre workflow GitHub Actions utilise un personal access token pour s’authentifier auprès d’un registre, nous vous recommandons vivement de mettre à jour votre workflow pour utiliser `GITHUB_TOKEN`. Pour obtenir des conseils sur la mise à jour de vos flux de travail qui s’authentifient auprès d’un registre avec un personal access token, consultez [Publication et installation d’un package avec GitHub Actions](/fr/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-a-registry-using-a-personal-access-token).
+
+> \[!NOTE]
+> La capacité des workflows GitHub Actions de supprimer et de restaurer des packages à l’aide de l’API REST est actuellement en préversion publique publique et susceptible d’être modifiée.
+
+Vous pouvez utiliser un `GITHUB_TOKEN` dans un workflow GitHub Actions pour supprimer ou restaurer un package via l’API REST si le jeton dispose de l’autorisation `admin` sur le package. Les référentiels qui publient des packages à l’aide d’un workflow et les référentiels que vous avez explicitement connectés à des packages se voient automatiquement accorder l’autorisation `admin` aux packages dans le référentiel.
+
+Pour plus d’informations sur `GITHUB_TOKEN`, consultez [Utiliser GITHUB\_TOKEN pour l’authentification dans les flux de travail](/fr/actions/security-guides/automatic-token-authentication#using-the-github_token-in-a-workflow). Pour plus d’informations sur les bonnes pratiques lors de l’utilisation d’un registre dans des actions, consultez [Informations de référence sur l’utilisation sécurisée](/fr/actions/security-guides/security-hardening-for-github-actions#considering-cross-repository-access).
+
+Vous pouvez également choisir d’accorder des autorisations d’accès aux packages indépendamment pour GitHub Codespaces et GitHub Actions. Pour plus d’informations, consultez « [Configuration du contrôle d’accès et de la visibilité d’un package](/fr/packages/learn-github-packages/configuring-a-packages-access-control-and-visibility#ensuring-codespaces-access-to-your-package) » et « [Configuration du contrôle d’accès et de la visibilité d’un package](/fr/packages/learn-github-packages/configuring-a-packages-access-control-and-visibility#ensuring-workflow-access-to-your-package) ».
+
+### Authentification avec un personal access token (classic)
+
+> \[!NOTE]
+> GitHub Packages prend uniquement en charge l’authentification à l’aide d’un personal access token (classic). Pour plus d’informations, consultez « [Gestion de vos jetons d’accès personnels](/fr/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) ».
+
+1. Créez un personal access token (classic) avec les étendues appropriées pour les tâches que vous souhaitez accomplir. Si votre organisation exige l’authentification unique, vous devez l’activer pour votre nouveau jeton.
+
+   > \[!NOTE]
+   > Par défaut, lorsque vous sélectionnez l’étendue `write:packages` pour votre personal access token (classic) dans l’interface utilisateur, l’étendue `repo` est également sélectionnée. L’étendue `repo` offre un accès inutile et vaste à la fois, que nous vous recommandons d’éviter d’utiliser pour les workflows GitHub Actions en particulier. Pour plus d’informations, consultez « [Informations de référence sur l’utilisation sécurisée](/fr/actions/security-guides/security-hardening-for-github-actions#considering-cross-repository-access) ». En guise de solution de contournement, vous pouvez juste sélectionner l’étendue `write:packages` pour votre personal access token (classic) dans l’interface utilisateur avec cette URL : `https://github.com/settings/tokens/new?scopes=write:packages`.
+
+   * Sélectionnez l’étendue `read:packages` pour télécharger des images conteneur et lire leurs métadonnées.
+   * Sélectionnez l’étendue `write:packages` pour télécharger et charger des images conteneur et lire et écrire leurs métadonnées.
+   * Sélectionnez l’étendue `delete:packages` pour supprimer des images conteneur.
+
+   Pour plus d’informations, consultez « [Gestion de vos jetons d’accès personnels](/fr/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) ».
+
+2. Enregistrez votre personal access token (classic). Nous vous recommandons d’enregistrer votre jeton en tant que variable d’environnement.
+
+   ```shell
+   export CR_PAT=YOUR_TOKEN
+   ```
+
+3. À l’aide de l’interface CLI de votre type de conteneur, connectez-vous au service du Container registry sur `ghcr.io`.
+
+   ```shell
+   $ echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
+   > Login Succeeded
+   ```
+
+## Envoi (push) d’images de conteneur
+
+Cet exemple envoie (push) la dernière version de `IMAGE_NAME`.
+
+```shell
+docker push ghcr.io/NAMESPACE/IMAGE_NAME:latest
+```
+
+Remplacez `NAMESPACE` par le nom du compte personnel ou de l’organisation auquel vous souhaitez que l’image soit délimitée.
+
+Cet exemple transfère la version `2.5` de l’image.
+
+```shell
+docker push ghcr.io/NAMESPACE/IMAGE_NAME:2.5
+```
+
+Lorsque vous publiez un package pour la première fois, la visibilité par défaut est privée. Pour modifier la visibilité ou définir les autorisations d’accès, consultez [Configuration du contrôle d’accès et de la visibilité d’un package](/fr/packages/learn-github-packages/configuring-a-packages-access-control-and-visibility). Vous pouvez lier un package publié à un dépôt en utilisant l’interface utilisateur ou la ligne de commande. Pour plus d’informations, consultez « [Connexion d’un dépôt à un package](/fr/packages/learn-github-packages/connecting-a-repository-to-a-package) ».
+
+Lorsque vous poussez une image conteneur à partir de la ligne de commande, l’image n’est pas liée à un dépôt par défaut. C’est le cas même si vous étiquetez l’image avec un espace de noms qui correspond au nom du dépôt, tel que `ghcr.io/octocat/my-repo:latest`.
+
+Le moyen le plus simple de connecter un dépôt à un package de conteneur consiste à publier le package à partir d’un workflow avec `${{secrets.GITHUB_TOKEN}}`, car le dépôt qui contient le workflow est lié automatiquement. Notez que le `GITHUB_TOKEN` n’aura pas l’autorisation de pousser le package si vous avez déjà poussé un package vers le même espace de noms, mais que vous n’avez pas connecté le package au dépôt.
+
+Pour connecter un dépôt lors de la publication d’une image à partir de la ligne de commande et pour vous assurer que votre `GITHUB_TOKEN` a les autorisations appropriées lors de l’utilisation d’un workflow GitHub Actions, nous vous recommandons d’ajouter l’étiquette `org.opencontainers.image.source` à votre `Dockerfile`. Pour plus d’informations, consultez « [Étiquetage des images conteneur](#labelling-container-images) » dans cet article et « [Publication et installation d’un package avec GitHub Actions](/fr/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions) ».
+
+## Téléchargement d’images de conteneur
+
+### Extraire par synthèse
+
+Pour vous assurer de toujours utiliser la même image, vous pouvez spécifier la version exacte de l’image conteneur que vous souhaitez extraire par la valeur SHA de `digest`.
+
+1. Pour trouver la valeur SHA de synthèse, utilisez `docker inspect` ou `docker pull`, et copiez la valeur SHA après `Digest:`
+
+   ```shell
+   docker inspect ghcr.io/NAMESPACE/IMAGE_NAME
+   ```
+
+   Remplacez `NAMESPACE` par le nom du compte personnel ou de l’organisation auquel l’image est délimitée.
+
+2. Supprimez l’image localement si nécessaire.
+
+   ```shell
+   docker rmi ghcr.io/NAMESPACE/IMAGE_NAME:latest
+   ```
+
+3. Extrayez l’image conteneur avec `@YOUR_SHA_VALUE` après le nom de l’image.
+
+   ```shell
+   docker pull ghcr.io/NAMESPACE/IMAGE_NAME@sha256:82jf9a84u29hiasldj289498uhois8498hjs29hkuhs
+   ```
+
+### Extraire par nom
+
+```shell
+docker pull ghcr.io/NAMESPACE/IMAGE_NAME
+```
+
+Remplacez `NAMESPACE` par le nom du compte personnel ou de l’organisation auquel l’image est délimitée.
+
+### Extraire par nom et version
+
+Exemple de CLI Docker montrant une image récupérée par son nom et le tag de version `1.14.1` :
+
+```shell
+$ docker pull ghcr.io/NAMESPACE/IMAGE_NAME:1.14.1
+> 5e35bd43cf78: Pull complete
+> 0c48c2209aab: Pull complete
+> fd45dd1aad5a: Pull complete
+> db6eb50c2d36: Pull complete
+> Digest: sha256:ae3b135f133155b3824d8b1f62959ff8a72e9cf9e884d88db7895d8544010d8e
+> Status: Downloaded newer image for ghcr.io/NAMESPACE/IMAGE_NAME/release:1.14.1
+> ghcr.io/NAMESPACE/IMAGE_NAME/release:1.14.1
+```
+
+Remplacez `NAMESPACE` par le nom du compte personnel ou de l’organisation auquel l’image est délimitée.
+
+### Extraire par nom et dernière version
+
+```shell
+$ docker pull ghcr.io/NAMESPACE/IMAGE_NAME:latest
+> latest: Pulling from NAMESPACE/IMAGE_NAME
+> Digest: sha256:b3d3e366b55f9a54599220198b3db5da8f53592acbbb7dc7e4e9878762fc5344
+> Status: Downloaded newer image for ghcr.io/NAMESPACE/IMAGE_NAME:latest
+> ghcr.io/NAMESPACE/IMAGE_NAME:latest
+```
+
+Remplacez `NAMESPACE` par le nom du compte personnel ou de l’organisation auquel l’image est délimitée.
+
+## Génération d’images conteneur
+
+Cet exemple génère l’image `hello_docker` :
+
+```shell
+docker build -t hello_docker .
+```
+
+## Étiquetage d’images de conteneur
+
+1. Recherchez l’ID de l’image Docker que vous souhaitez étiqueter.
+
+   ```shell
+   $ docker images
+   > REPOSITORY                                            TAG                 IMAGE ID            CREATED             SIZE
+   > ghcr.io/my-org/hello_docker         latest            38f737a91f39        47 hours ago        91.7MB
+   > hello-world                                           latest              fce289e99eb9        16 months ago       1.84kB
+   ```
+
+2. Étiquetez votre image Docker avec l’ID d’image, ainsi le nom et la destination d’hébergement de l’image souhaitée.
+
+   ```shell
+   docker tag 38f737a91f39 ghcr.io/NAMESPACE/NEW_IMAGE_NAME:latest
+   ```
+
+Remplacez `NAMESPACE` par le nom du compte personnel ou de l’organisation auquel vous souhaitez que l’image soit délimitée.
+
+## Étiquetage d'images de conteneur
+
+Vous pouvez utiliser des clés d’annotation prédéfinies pour ajouter des métadonnées, notamment une description, une licence et un dépôt source, à votre image conteneur. Les valeurs des clés prises en charge s’affichent dans la page du package pour l’image.
+
+Pour la plupart des images, vous pouvez utiliser des étiquettes Docker pour ajouter les clés d’annotation à une image. Pour plus d’informations, consultez [LABEL](https://docs.docker.com/engine/reference/builder/#label) dans la documentation officielle de Docker et [Clés d’annotation prédéfinies](https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys) dans le dépôt `opencontainers/image-spec`.
+
+Pour les images multi-arch, vous pouvez ajouter une description à l’image en ajoutant la clé d’annotation appropriée au champ `annotations` dans le manifeste de l’image. Pour plus d’informations, consultez [Ajout d’une description à des images multi-arch](#adding-a-description-to-multi-arch-images).
+
+Les clés d’annotation suivantes sont prises en charge dans le Container registry.
+
+| Clé                                    | Description                                                                                                                                                                                                                                                |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `org.opencontainers.image.source`      | URL du dépôt associé au package. Pour plus d’informations, consultez « [Connexion d’un dépôt à un package](/fr/packages/learn-github-packages/connecting-a-repository-to-a-package#connecting-a-repository-to-a-container-image-using-the-command-line) ». |
+| `org.opencontainers.image.description` | Description en texte uniquement limitée à 512 caractères. Cette description s’affiche sur la page du package, sous le nom du package.                                                                                                                      |
+| `org.opencontainers.image.licenses`    | Un identificateur de licence SPDX tel que « MIT », limité à 256 caractères. La licence apparaît dans la page du package, dans la barre latérale « Détails ». Pour plus d’informations, consultez [Liste des licences SPDX](https://spdx.org/licenses/).    |
+
+Pour ajouter une clé en tant qu’étiquette Docker, nous recommandons d’utiliser l’instruction `LABEL` dans votre `Dockerfile`. Par exemple, si vous êtes l’utilisateur `octocat`, que vous possédez `my-repo` et que votre image est distribuée selon les termes de la licence MIT, vous devez ajouter les lignes suivantes à votre `Dockerfile` :
+
+```dockerfile
+LABEL org.opencontainers.image.source=https://github.com/octocat/my-repo
+LABEL org.opencontainers.image.description="My container image"
+LABEL org.opencontainers.image.licenses=MIT
+```
+
+> \[!NOTE]
+> Si vous publiez un package lié à un dépôt, le package hérite automatiquement des autorisations d’accès du dépôt lié, tandis que les workflows GitHub Actions du dépôt lié accèdent automatiquement au package, sauf si votre organisation a désactivé l’héritage automatique des autorisations d’accès. Pour plus d’informations, consultez « [Configuration du contrôle d’accès et de la visibilité d’un package](/fr/packages/learn-github-packages/configuring-a-packages-access-control-and-visibility#about-inheritance-of-access-permissions) ».
+
+Vous pouvez également ajouter des étiquettes à une image au moment de la génération avec la commande `docker build`.
+
+```shell
+$ docker build \
+ --label "org.opencontainers.image.source=https://github.com/octocat/my-repo" \
+ --label "org.opencontainers.image.description=My container image" \
+ --label "org.opencontainers.image.licenses=MIT"
+```
+
+### Ajout d’une description à des images multi-arch
+
+Une image multi-arch est une image qui prend en charge plusieurs architectures. Elle fonctionne en référençant une liste d’images, chacune prenant en charge une architecture différente, au sein d’un même manifeste.
+
+La description qui apparaît dans la page du package d’une image multi-arch s’obtient à partir du champ `annotations` dans le manifeste de l’image. Comme les étiquettes Docker, les annotations offrent un moyen d’associer des métadonnées à une image et prennent en charge les clés d’annotation prédéfinies. Pour plus d’informations, consultez [Annotations](https://github.com/opencontainers/image-spec/blob/main/annotations.md) dans le dépôt `opencontainers/image-spec`.
+
+Pour fournir une description d’une image multi-arch, définissez une valeur pour la clé `org.opencontainers.image.description` dans le champ `annotations` du manifeste, comme suit.
+
+```json
+"annotations": {
+  "org.opencontainers.image.description": "My multi-arch image"
+}
+```
+
+Par exemple, l’étape suivante du workflow GitHub Actions génère et envoie une image multi-architecture. Le paramètre `outputs` définit la description de l’image.
+
+```yaml
+# Ce workflow utilise des actions qui ne sont pas certifiées par GitHub.
+# Elles sont fournies par un tiers et régies par
+# des conditions d’utilisation du service, une politique de confidentialité et un support distincts.
+# documentation en ligne.
+
+- name: Build and push Docker image
+  uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+  with:
+    context: .
+    file: ./Dockerfile
+    platforms: ${{ matrix.platforms }}
+    push: true
+    outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=My multi-arch image
+```
+
+## Dépannage
+
+* Le Container registry a une limite de taille de 10 Go pour chaque couche.
+* Le Container registry a une limite de temps de 10 minutes pour les téléchargements.
