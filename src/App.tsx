@@ -15,6 +15,9 @@ import Monitoring from "./pages/Monitoring";
 import Agents from "./pages/Agents";
 import Templates from "./pages/Templates";
 import Deployments from "./pages/Deployments";
+import Team from "./pages/Team";
+import UsersPage from "./pages/Users";
+import Roles from "./pages/Roles";
 import { 
   Bot, 
   Cpu, 
@@ -46,7 +49,9 @@ import {
   Command,
   Keyboard,
   BarChart3,
-  AlertCircle
+  AlertCircle,
+  Users,
+  Shield
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -62,6 +67,9 @@ function Sidebar() {
     { path: "/agents", icon: Bot, label: "Agents" },
     { path: "/templates", icon: Code, label: "Templates" },
     { path: "/deployments", icon: GitPullRequest, label: "Deployments" },
+    { path: "/team", icon: Users, label: "Team" },
+    { path: "/users", icon: Users, label: "Users" },
+    { path: "/roles", icon: Shield, label: "Roles" },
     { path: "/tools", icon: Cpu, label: "Tools" },
     { path: "/repos", icon: Github, label: "Repos" },
     { path: "/chat", icon: Bot, label: "Chat" },
@@ -488,6 +496,9 @@ export default function App() {
             <Route path="/agents" element={<Agents />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/deployments" element={<Deployments />} />
+            <Route path="/team" element={<Team />} />
+            <Route path="/users" element={<UsersPage />} />
+            <Route path="/roles" element={<Roles />} />
             <Route path="/*" element={<LandingPage />} />
           </Routes>
         </div>
