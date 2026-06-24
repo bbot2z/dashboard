@@ -12,6 +12,9 @@ import { PRBlueprintWorkspace } from "./components/PRBlueprintWorkspace";
 import Dashboard from "./pages/Dashboard";
 import Analytics from "./pages/Analytics";
 import Monitoring from "./pages/Monitoring";
+import Agents from "./pages/Agents";
+import Templates from "./pages/Templates";
+import Deployments from "./pages/Deployments";
 import { 
   Bot, 
   Cpu, 
@@ -56,6 +59,9 @@ function Sidebar() {
     { path: "/", icon: Activity, label: "Dashboard" },
     { path: "/analytics", icon: BarChart3, label: "Analytics" },
     { path: "/monitoring", icon: AlertCircle, label: "Monitoring" },
+    { path: "/agents", icon: Bot, label: "Agents" },
+    { path: "/templates", icon: Code, label: "Templates" },
+    { path: "/deployments", icon: GitPullRequest, label: "Deployments" },
     { path: "/tools", icon: Cpu, label: "Tools" },
     { path: "/repos", icon: Github, label: "Repos" },
     { path: "/chat", icon: Bot, label: "Chat" },
@@ -479,6 +485,9 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/monitoring" element={<Monitoring />} />
+            <Route path="/agents" element={<Agents />} />
+            <Route path="/templates" element={<Templates />} />
+            <Route path="/deployments" element={<Deployments />} />
             <Route path="/*" element={<LandingPage />} />
           </Routes>
         </div>
