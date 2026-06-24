@@ -18,6 +18,13 @@ import Deployments from "./pages/Deployments";
 import Team from "./pages/Team";
 import UsersPage from "./pages/Users";
 import Roles from "./pages/Roles";
+import Settings from "./pages/Settings";
+import Integrations from "./pages/Integrations";
+import ApiKeys from "./pages/ApiKeys";
+import Logs from "./pages/Logs";
+import Alerts from "./pages/Alerts";
+import Events from "./pages/Events";
+import Errors from "./pages/Errors";
 import { 
   Bot, 
   Cpu, 
@@ -51,7 +58,10 @@ import {
   BarChart3,
   AlertCircle,
   Users,
-  Shield
+  Shield,
+  FileText,
+  Bell,
+  AlertTriangle
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -70,6 +80,13 @@ function Sidebar() {
     { path: "/team", icon: Users, label: "Team" },
     { path: "/users", icon: Users, label: "Users" },
     { path: "/roles", icon: Shield, label: "Roles" },
+    { path: "/settings", icon: Cpu, label: "Settings" },
+    { path: "/integrations", icon: Zap, label: "Integrations" },
+    { path: "/api-keys", icon: ShieldCheck, label: "API Keys" },
+    { path: "/logs", icon: FileText, label: "Logs" },
+    { path: "/alerts", icon: Bell, label: "Alerts" },
+    { path: "/events", icon: Heart, label: "Events" },
+    { path: "/errors", icon: AlertTriangle, label: "Errors" },
     { path: "/tools", icon: Cpu, label: "Tools" },
     { path: "/repos", icon: Github, label: "Repos" },
     { path: "/chat", icon: Bot, label: "Chat" },
@@ -499,6 +516,13 @@ export default function App() {
             <Route path="/team" element={<Team />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/roles" element={<Roles />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/integrations" element={<Integrations />} />
+            <Route path="/api-keys" element={<ApiKeys />} />
+            <Route path="/logs" element={<Logs />} />
+            <Route path="/alerts" element={<Alerts />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/errors" element={<Errors />} />
             <Route path="/*" element={<LandingPage />} />
           </Routes>
         </div>
